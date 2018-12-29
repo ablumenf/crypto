@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+    	<title>Crypto</title>
+
+    	<link href="../css/bootstrap.min.css" rel="stylesheet">
+    	<link href="../css/ab.css" rel="stylesheet">
+	</head>
+
+  <body>
+
+		<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="http://www.aaronblumenfeld.com">Aaron Blumenfeld</a>
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarResponsive">
+					<ul class="navbar-nav ml-2">
+						<li class="nav-item">
+							<a class="nav-link" href="http://www.aaronblumenfeld.com">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../sunny">Sunny</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../kmeans">k-Means</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../graph-vis">Graph Vis</a>
+						</li>
+						<li class="dropdown">
+							<a class="nav-link dropdown-toggle" href="../crypto" id="navbarDropdown" aria-haspopup="true" aria-expanded="false">
+								Crypto
+							</a>
+							<div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
+								<a class="dropdown-item" href="../crypto/numtheory">Number Theory</a>
+								<a class="dropdown-item" href="../crypto/rsa">RSA</a>
+								<a class="dropdown-item" href="../crypto/dl">Discrete Logs</a>
+								<a class="dropdown-item" href="../crypto/ecc">Elliptic Curve Cryptography</a>
+							</div>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../teaching">Teaching</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../contact">Contact</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container mt-3">
+
+			<h4>Cryptography Tools</h4>
+
+				<p>The following pages contain useful cryptographic tools (and explanations of the math behind them), intended to help you learn
+				(they are not industry-grade).</p>
+
+				<ul>
+					<li><a href="numtheory">Number Theory</a></li>
+					<li><a href="rsa">RSA</a></li>
+					<li><a href="dl">Discrete Logs</a></li>
+					<li><a href="ecc">Elliptic Curve Cryptography</a></li>
+				</ul>
+
+				<hr>
+
+				<h4>Cryptography Overview</h4>
+
+				<p>At a high level, DES and AES are <span class="font-italic">symmetric cryptosystems</span>. This means they use the same key for
+				encryption and decryption. DES uses 64-bit keys (really just 56-bit keys; every 8th bit is used for error detection). AES has 128-bit,
+				192-bit, and and 256-bit versions.</p>
+
+				<p>DES is no longer considered secure, but it's much easier to understand than AES, so it's typically presented first. AES is a bit more
+				complicated, though, since it requires some knowledge of finite fields. Like DES, it uses many rounds of low-level bit manipulations.
+				Both algorithms are based on low-level bit manipulations and matrices called S-boxes, while public-key cryptography is based more on
+				pure mathematics.</p>
+
+				<p>RSA is a <span class="font-italic">public-key cryptosystem</span> (i.e., asymmetric cryptosystem), which means that separate keys
+				are used for encryption and decryption. The <span class="font-italic">encryption</span> key is public. Anyone is allowed to know that.
+				But the <span class="font-italic">decryption</span> key must remain private to maintain security. In practice, people use a system like
+				RSA to exchange a key for use with a symmetric system like AES. This is because the lower-level calculations with AES are much faster
+				than RSA. This is especially true because RSA requires many more bits of security to match AES (RSA is based on the hardness of factoring
+				integers, which is hard, but perhaps not quite as hard as we might like; there are subexponential-time algorithms for factoring, but no
+				known polynomial-time algorithms). For example, it is estimated that 128-bit AES is about as secure as 3072-bit RSA. This means doing
+				arithmetic calculations with 3000-bit numbers (think in the ballpark of 1000-digit numbers). To match the security of 256-bit AES,
+				RSA requires 15360-bit keys!</p>
+
+				<p>ECC (elliptic curve cryptography) is much broader than a cryptosystem. There are cryptosystems, digital signatures, etc.,
+				but we'll just focus on <span class="font-italic">key exchanges</span> (specifically, the Diffie-Hellman key exchange). ECC is based
+				on mathematical objects called elliptic curves. The calculations are much more complicated than those needed for RSA, but the main advantage is that
+				we can use <span class="font-weight-bold">much</span> smaller keys. For example, to match the security of 128-bit AES, only 256-bit keys
+				are required; a huge advantage over 3072-bit RSA!</p>
+
+				<p>There are many other interesting topics not covered here, such as (cryptographic) hashing, digital signatures, and certificate
+				authorities (like Verisign). Some hashing algorithms that would be good to look up are SHA-1 and SHA-2 (SHA-1 is no longer
+				considered secure). One way to do digital signatures is to take any public-key cryptosystem and sign using the private key and
+				verify using the public key. There are also dedicated signature algorithms, such as the Digital Signature Algorithm (DSA)
+				and Elliptic Curve Digital Signature Algorithm (ECDSA). For a few more cryptography resources, go to my
+				<a href="../teaching">Teaching</a> page.</p>
+
+		</div>
+
+		<script src="../js/jquery.min.js"></script>
+		<script src="../js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>

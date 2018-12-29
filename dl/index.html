@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+    	<title>Discrete Logarithms</title>
+
+    	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+    	<link href="../../css/ab.css" rel="stylesheet">
+    	<script src="../utils.js"></script>
+    	<script src="dl.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.2/d3.min.js"></script>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+	</head>
+
+  <body>
+
+		<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="http://www.aaronblumenfeld.com">Aaron Blumenfeld</a>
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarResponsive">
+					<ul class="navbar-nav ml-2">
+						<li class="nav-item">
+							<a class="nav-link" href="http://www.aaronblumenfeld.com">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../sunny">Sunny</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../kmeans">k-Means</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../graph-vis">Graph Vis</a>
+						</li>
+						<li class="dropdown">
+							<a class="nav-link dropdown-toggle" href=".." id="navbarDropdown" aria-haspopup="true" aria-expanded="false">
+								Crypto
+							</a>
+							<div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
+								<a class="dropdown-item" href="../numtheory">Number Theory</a>
+								<a class="dropdown-item" href="../rsa">RSA</a>
+								<a class="dropdown-item" href="../dl">Discrete Logs</a>
+								<a class="dropdown-item" href="../ecc">Elliptic Curve Cryptography</a>
+							</div>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../teaching">Teaching</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../contact">Contact</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container mt-3">
+
+				<h4>Discrete Log Calculator</h4>
+
+				<p class="mt-3">Values for <span class="tex" content="g"></span> and <span class="tex" content="y"></span> will automatically
+				get reduced mod <span class="tex" content="p"></span>. Values for <span class="tex" content="x"></span> will automatically
+				get reduced mod <span class="tex" content="p-1"></span>.</p>
+
+				<hr>
+
+				<div ng-app="app" ng-controller="ctrl">
+
+				<div class="row mt-3" style="min-height: 400px;">
+					<div class="col col-lg-5 col-md-5">
+						<table class="table table-borderless table-hover mt-2">
+							<tbody>
+								<tr>
+									<th scope="row">Prime <span class="tex" content="p"></span></th>
+									<td><input type="text" class="form-control" ng-model="p" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="g"></span></th>
+									<td><input type="text" class="form-control" ng-model="g" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="x"></span></th>
+									<td><input type="text" class="form-control" ng-model="x" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="y"></span></th>
+									<td><input type="text" class="form-control" ng-model="y" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-lg-7 col-md-7">
+						<div class="card h-100">
+							<h4 class="card-header text-center">Output</h4>
+								<div class="card-body" id="dlOutput"></div>
+								<div class="card-footer text-center">
+									<div>
+										<button class="btn btn-success" ng-click="generatePrime()">Generate <span class="tex" content="p"></span></button>
+										<button class="btn btn-success" ng-click="generatePrimRoot()">Generate <span class="tex" content="g"></span></button>
+										<button class="btn btn-success" ng-click="order()">Order(<span class="tex" content="g"></span>)</button>
+										<button class="btn btn-primary" ng-click="modExp()"><span class="tex" content="g^x"></span></button>
+										<button class="btn btn-info" ng-click="log()"><span class="tex" content="\log_g(y)"></span></button>
+									</div>
+									<div class="mt-2">
+										<button class="btn btn-danger" ng-click="clearOutput()">Clear</button>
+									</div>
+									<div id="dlAlert" class="mt-2"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				<script src="dl_angular_app.js"></script>
+
+				<hr>
+
+				<h4>Discrete Logarithms</h4>
+
+				<p>The discrete logarithm problem is the problem of solving <span class="tex" content="g^x \equiv y \pmod{p}"></span> for <span class="tex" content="x"></span>.
+				Here, <span class="tex" content="y"></span> is known, but <span class="tex" content="x"></span> is not. For example, we might want to solve <span class="tex"
+				content="5^{x} \equiv 18 \pmod{23}"></span>. One algorithm is to iterate through every value of <span class="tex" content="x"></span> until we find the right answer,
+				but this is obviously unsatisfactorily slow. In fact, in some cases, there may not even <span class="font-italic">be</span> a solution.</p>
+
+				<p>The discrete logarithm problem is the basis of many aspects of public-key cryptography. It is primarily the basis of the Diffie-Hellman
+				Key Exchange, which is not actually a cryptosystem. We frequently use public-key cryptography to generate a key to use with AES. RSA
+				does this by encrypting a symmetric AES key, but Diffie-Hellman is not actually encryption, at least not in the same sense as RSA. There are
+				also cryptosystems (namely ElGamal) and digital signatures (e.g., DSA) that make use of discrete logarithms. We will focus instead on key exchanges.
+				The discrete logarithm problem is also very general and works with other groups such as <a href="../ecc">elliptic curves</a>.</p>
+
+				<hr>
+
+				<h5>Primitive Roots</h5>
+
+				<p>A primitive root (also known as a generator) mod <span class="tex" content="p"></span> is an integer <span class="tex" content="g"></span> that generates the
+				nonzero numbers mod <span class="tex" content="p"></span>. That is, for any <span class="tex" content="1 \leq y \leq p-1"></span>, <span class="tex" content="g^x
+				\equiv y \pmod{p}"></span> has a solution. For example, 3 is a primitive root mod 7 since the powers of 3 are 3, 2, 6, 4, 5, 1, which is a permutation of
+				1, 2, 3, 4, 5, 6.</p>
+
+				<p>Note that <span class="tex" content="g^x \equiv y \pmod{p}"></span> may not be solvable. It is only guaranteed to be solvable when <span class="tex"
+				content="g"></span> is a primitive root. For example, <span class="tex" content="4^x \equiv 10 \pmod{11}"></span> has no solution. (A perfect square is never a
+				primitive root.)</p>
+
+				<p>It is not easy to find a primitive root in general, but once you do find one, it is easy to find the others. Given a primitive root <span class="tex" content="g"></span>,
+				<span class="tex" content="g^a"></span> is a primitive root whenever <span class="tex" content="\text{gcd}(a, p-1) = 1"></span>. It turns out that <span class="tex"
+				content="2"></span> is commonly a primitive root, so it's a good guess to start with. To verify a number <span class="tex" content="g"></span> is a primitive root,
+				one technique is to write out the factorization of <span class="tex" content="p-1"></span>. The order of <span class="tex" content="g"></span> (that is, the smallest
+				number <span class="tex" content="x"></span> such that <span class="tex" content="g^x \equiv 1 \pmod{p}"></span>) must divide <span class="tex" content="p-1"></span>.
+				For example, to verify 2 is a primitive root mod 11, we can write <span class="tex" content="11 - 1 = 2 \times 5"></span>. So the order of 2 must be either 2, 5, or 10.
+				Since <span class="tex" content="2^2 \equiv 4 \not \equiv 1 \pmod{11}"></span> and <span class="tex" content="2^5 \equiv 10 \;{\not \equiv}\; 1 \pmod{11}"></span>,
+				the order must be 10, so 2 is a primitive root. Of course, factoring is difficult, so this is not an ideal algorithm.</p>
+
+				<hr>
+
+				<h5>Diffie-Hellman Key Exchange</h5>
+
+				<p>The Diffie-Hellman Key Exchange gives a way for two parties, Aaron and Blumenfeld, to agree on a private key that they know about but anyone
+				intercepting their communication will not be able to obtain the key (without the ability to solve discrete logarithms). Of course, this page
+				features a discrete logarithm calculator, but in real life, primes that are over 1000 bits long should be used.</p>
+
+				<p>Diffie-Hellman proceeds as follows: Aaron and Blumenfeld agree on a prime <span class="tex" content="p"></span> and a primitive root <span class="tex"
+				content="g"></span>. This is public knowledge. Aaron then chooses a secret integer <span class="tex" content="a"></span> and sends <span class="tex"
+				content="g^a \bmod{p}"></span> to Blumenfeld. Blumenfeld chooses a secret integer <span class="tex" content="b"></span> and sends <span class="tex"
+				content="g^b \bmod{p}"></span> to Aaron. The secret key is then <span class="tex" content="g^{ab} \bmod{p}"></span>. Aaron can compute this as
+				<span class="tex" content="{(g^{b})}^a \bmod{p}"></span>, and Blumenfeld can compute this as <span class="tex" content="{(g^{a})}^b \bmod{p}"></span>.
+				But anyone who intercepts either <span class="tex" content="g^a"></span> or <span class="tex" content="g^b"></span> cannot compute <span class="tex"
+				content="g^{ab}"></span> unless they can solve the discrete logarithm problem (unless there's another way to compute <span class="tex" content="g^{ab}"></span>,
+				which seems unlikely, but which remains an open problem).</p>
+
+				<p>There are issues of man-in-the-middle attacks, however. Eve could intercept <span class="tex" content="g^a"></span> and pretend to be Blumenfeld,
+				sending <span class="tex" content="g^{e_1}"></span> for her own choice of <span class="tex" content="e_1"></span> to Aaron, and similarly send
+				<span class="tex" content="g^{e_2}"></span> to Blumenfeld after receiving <span class="tex" content="g^b"></span>. We will not discuss this issue further here.</p>
+
+				<hr>
+
+				<h5>Common Algorithms</h5>
+
+				<p>One common algorithm is the <span class="font-weight-bold">Pohlig-Hellman Algorithm</span>, which notes that the value of the logarithm is
+				unique mod <span class="tex" content="p-1"></span> (at least when <span class="tex" content="g"></span> is a primitive root). The idea is to factor
+				<span class="tex" content="p-1 = \prod_i {q_i}^{m_i}"></span> and compute the logarithm mod <span class="tex" content="{q_i}^{m_i}"></span>
+				for each <span class="tex" content="i"></span>, then find the solution mod <span class="tex" content="p-1"></span> using the Chinese Remainder Theorem.
+				This attacks works best when <span class="tex" content="p-1"></span> consists completely of small factors. For example, when <span class="tex" content="p = 1201">
+				</span>, the largest prime factor of <span class="tex" content="p-1"></span> is <span class="tex" content="5"></span>. This is a good reason to ensure that
+				<span class="tex" content="p-1"></span> has at least one large prime factor when choosing <span class="tex" content="p"></span>.</p>
+
+				<p>Another algorithm is called <span class="font-weight-bold">Baby Step, Giant Step</span>. The idea is to choose an integer <span class="tex" content="N \geq p-1"></span>
+				and form two tables. The first table is pairs <span class="tex" content="(i, g^i \bmod{p})"></span> for <span class="tex" content="0 \leq i < N"></span>. The second
+				table is pairs <span class="tex" content="(j, yg^{-Nj} \bmod{p})"></span> for <span class="tex" content="0 \leq j < N"></span>. We then look
+				for a match between the two lists. Once a match is found, we write <span class="tex" content="g^i \equiv yg^{-Nj} \pmod{p}"></span>, which means <span class="tex"
+				content="g^{i+Nj} \equiv y \pmod{p}"></span>. Then <span class="tex" content="i + Nj"></span> is the desired solution. This match must exist because it is a number
+				mod <span class="tex" content="p-1 < N^2"></span> and can thus be written uniquely in base <span class="tex" content="N"></span> as <span class="tex"
+				content="i + Nj"></span> for <span class="tex" content="0 \leq i, j < N"></span>.</p>
+
+				<hr>
+
+				<h5>The Birthday Paradox</h5>
+
+				<p>It may be surprising that with just 23 people in a room, there's a greater than 50% chance that at least two people in the room share a birthday.
+				The exact probability can be computed as $$1 - (1 - 1/365)(1 - 2/365)\ldots(1 - 22/365) > 0.5.$$</p>
+
+				<p>In general, if we have <span class="tex" content="N"></span> objects and <span class="tex" content="r"></span> people, each choosing one of the objects
+				(with replacement, so there can be collisions), the exact probability can be computed in this way, but as <span class="tex" content="N"></span> grows, the
+				probability is actually estimated quite well by <span class="tex" content="1 - e^{-r^2/2N}"></span>. This can be proven using basic calculus.
+				Choosing <span class="tex" content="r^2/2N = \ln{2}"></span> requires <span class="tex" content="r \approx 1.177\sqrt{N}"></span> to result in a 50% chance
+				of two people choosing the same object.</p>
+
+				<hr>
+
+				<h5>Pollard's Rho Algorithm</h5>
+
+				<p>An algorithm based on the Birthday Paradox is <span class="font-weight-bold">Pollard's Rho Algorithm</span>. This algorithm also has variants
+				for factoring integers among other computational tasks. The idea is essentially that of finding a loop in a linked list, but we don't actually
+				store the list.</p>
+
+				<p>We break up the integers mod <span class="tex" content="p"></span> into three sets: <span class="tex" content="S_0, S_1, S_2"></span>. For example, we could
+				place them according to their residue mod 3. Fix <span class="tex" content="g"></span> and <span class="tex" content="y"></span> (we want to solve
+				<span class="tex" content="g^x \equiv y \pmod{p}"></span> for <span class="tex" content="x"></span>). Define <span class="tex" content="a_1 = g^r \bmod{p}"></span>
+				for a randomly chosen value of <span class="tex" content="r"></span>, and for <span class="tex" content="i \geq 1"></span>,
+
+				$$a_{i+1} = \begin{cases}ya_i, &a_i \in S_0, \\ a_i^2, &a_i \in S_1, \\ ga_i, &a_i \in S_2.\end{cases}$$</p>
+
+				<p>We then look at pairs of the form <span class="tex" content="(a_i, a_{2i})"></span> (i.e., <span class="tex" content="(a_1, a_2), (a_2, a_4), (a_3, a_6)"></span>,
+				etc.). Since we can compute <span class="tex" content="a_{i+1}"></span> from <span class="tex" content="a_i"></span> using the definition of the sequence and
+				<span class="tex" content="a_{2(i+1)}"></span> from <span class="tex" content="a_{2i}"></span> by iterating the sequence definition twice, we need not store any large
+				tables. The pigeonhole principle immediately implies that there will be a collision at some point: <span class="tex" content="a_i = a_j"></span> with <span
+				class="tex" content="i < j"></span>. In fact, there must be a collision with the form <span class="tex" content="j = 2i"></span>.</p>
+
+				<div id="accordion1" class="mb-3">
+					<div class="card">
+						<div class="card-header">
+							<h5 class="mb-0">
+								<button class="btn btn-link" data-toggle="collapse" data-target="#rho-details" aria-expanded="true" aria-controls="rho-details">
+									Proof.
+								</button>
+							</h5>
+						</div>
+
+						<div id="rho-details" class="collapse" data-parent="#accordion1">
+							<div class="card-body">
+								<p>Once we have <span class="tex" content="a_i = a_j"></span>, it follows that <span class="tex" content="a_{i+k} = a_{j+k}"></span> for all
+								<span class="tex" content="k \geq 0"></span>. So set <span class="tex" content="2(i+k) = j + k"></span> and solve for <span class="tex"
+								content="k"></span>. This has the solution <span class="tex" content="j - 2i"></span>. Then <span class="tex" content="a_{i+j-2i} = a_{j+j-2i}"></span>,
+								or <span class="tex" content="a_{j-i} = a_{2(j-i)}"></span>, as desired.</p>
+
+								<p>But this requires <span class="tex" content="j \geq 2i"></span>. This assumption is not stifling, however. Indeed, if <span class="tex"
+								content="a_i = a_j"></span>, but <span class="tex" content="j < 2i"></span>, then we know we have a cycle of length <span class="tex"
+								content="j-i"></span> (or some divisor of <span class="tex" content="j-i"></span>). So there exists an integer <span class="tex" content="r"></span>
+								with <span class="tex" content="r(j-i) \geq i"></span>. In this case, we know <span class="tex" content="a_j = a_{j+r(j-i)}"></span>, which must also
+								be equal to <span class="tex" content="a_i"></span>. Since <span class="tex" content="r(j-i) \geq i"></span> and <span class="tex" content="j \geq i">
+								</span>, we see that <span class="tex" content="j + r(j-i) \geq 2i"></span>, so it is safe to assume that <span class="tex" content="j \geq 2i"></span>
+								in the first place. What we are doing here is traversing the cycle multiple times.</p>
+
+								<p>To give a concrete example, suppose that <span class="tex" content="a_5 = a_8"></span>. But then <span class="tex" content="j - 2i = -2"></span>.
+								But there must be a cycle of length 3 (or possibly 1), so <span class="tex" content="a_5 = a_8 = a_{11}"></span>. Since <span class="tex" content="11
+								\geq 2\times 5"></span>, we can let <span class="tex" content="k = 11 - 2\cdot 5 = 1"></span>, and we observe that <span class="tex"
+								content="a_{5+1} = a_{11+1}"></span>, or <span class="tex" content="a_6 = a_{12}"></span>.</p>
+
+								<p>Here is a visualization of what the sequence looks like. There is a tail which leads into a cycle. This looks like the Greek letter
+								<span class="tex" content="\rho"></span>, hence the name for the algorithm. In this case, we find <span class="tex" content="a_4 = a_{16}"></span>,
+								and <span class="tex" content="a_{12} = a_{24}"></span>.</p>
+
+								<div class="text-center" id="rho-vis"></div>
+
+								<script>
+								const points = [[10, 160], [22, 130], [35, 100], [48, 70], [65, 40], [95, 20], [130, 25], [155, 40],
+												[165, 65], [160, 90], [145, 105], [120, 110], [99, 104], [84, 94], [66, 82]];
+								const blue = "#1266de";
+
+								d3.select("#rho-vis")
+									.append("svg")
+									.attr("width", 200)
+									.attr("height", 200)
+									.append("g")
+									.attr("id", "rho_g");
+
+								d3.select("#rho_g").selectAll("circle")
+									.data(points)
+									.enter()
+									.append("circle")
+									.attr("cx", d => d[0])
+									.attr("cy", d => d[1])
+									.attr("r", 4)
+									.attr("fill", blue);
+
+								d3.select("#rho_g").selectAll("text")
+									.data(points)
+									.enter()
+									.append("text")
+									.attr("x", (d, i) => (i >= 11) ? d[0] - 8 : d[0])
+									.attr("y", (d, i) => (i >= 10) ? d[1] + 20 : d[1] + 15)
+									.style("font-size", "13px")
+									.style("font-family", "Arial, Helvetica, sans-serif")
+									.style("font-weight", "bold")
+									.attr("fill", "#910b28")
+									.text((d, i) => (i+1));
+								</script>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<p>When we look for collisions, we also keep track of the exponents. Each term of the sequence takes the form <span class="tex" content="g^iy^j"></span> for some
+				values of <span class="tex" content="i"></span> and <span class="tex" content="j"></span>. Once we find an equality, we have <span class="tex" content="g^{i_1}y^{j_1}
+				\equiv g^{i_2}y^{j_2} \pmod{p}"></span>. Since <span class="tex" content="g^x \equiv y \pmod{p}"></span> (we are trying to solve for <span class="tex"
+				content="x"></span>), we can write <span class="tex" content="g^{i_1 + xj_1} \equiv g^{i_2 + xj_2} \pmod{p}"></span>, or $$i_1 - i_2 \equiv x(j_2 - j_1) \pmod{p-1},$$
+				We can solve for <span class="tex" content="x"></span> provided that <span class="tex" content="\text{gcd}(j_2-j_1, p-1) = 1"></span>. But even if <span class="tex"
+				content="d = \text{gcd}(j_2-j_1, p-1) > 1"></span>, we can invert <span class="tex" content="(j_2-j_1)/d"></span> mod <span class="tex" content="\frac{p-1}{d}"></span> and lift the
+				solution to all <span class="tex" content="d"></span> possible solutions mod <span class="tex" content="p-1"></span> to see which one is correct.</p>
+
+				<p>Here's an example. Let's compute <span class="tex" content="\log_{10}(37) \pmod{58}"></span> (10 is a primitive root mod 59). This means we want an
+				<span class="tex" content="x"></span> with <span class="tex" content="10^x \equiv 37 \pmod{59}"></span>. Let's start with <span class="tex" content="a_1 = 10^5 \equiv
+				54 \pmod{59}"></span>, and partition the integers mod 37 into <span class="tex" content="S_1, S_2, S_3"></span> according their residue mod 3. We have the
+				following computations:</p>
+
+				<p>
+					<div class="tex" content="a_1 \equiv 10^5 \;\;\;\;\;\:\,\equiv 54 \pmod{59}, \;\:a_2 \equiv 37 \cdot 10^5 \;\:\equiv 51 \pmod{59}"></div>
+					<div class="tex" content="a_2 \equiv 37\cdot 10^5 \equiv 51 \pmod{59}, \;\;a_4 \equiv 37^4 10^{10} \;\:\equiv 1 \pmod{59}"></div>
+					<div class="tex" content="a_3 \equiv 37^2 10^5 \;\equiv 58 \pmod{59}, \;\;a_6 \equiv 37^{16}10^{40} \;\equiv 1 \pmod{59}"></div>
+					<div class="tex" content="a_4 \equiv 37^4 10^{10}  \equiv 1 \pmod{59}, \;\;\:\,a_8 \equiv 37^{64}10^{160} \equiv 1 \pmod{59}"></div>
+				</p>
+
+				<p>We then discover that <span class="tex" content="a_4 = a_8"></span>, which means <span class="tex" content="37^{4}10^{10} \equiv 37^{64}10^{160} \pmod{59}"></span>,
+				or <span class="tex" content="10^{64x + 160} \equiv 10^{4x + 10} \pmod{59}"></span>. This tells us that <span class="tex" content="64x + 160 \equiv 4x + 10
+				\pmod{58}"></span>, which reduces to <span class="tex" content="2x \equiv 24 \pmod{58}"></span>. Since <span class="tex" content="\text{gcd}(2, 58) = 2"></span>,
+				we cannot divide by 2, but we can view this mod 29 and get <span class="tex" content="x \equiv 12 \pmod{29}"></span> (if <span class="tex" content="2x = 24 + 58k"></span>
+				for some integer <span class="tex" content="k"></span>, then <span class="tex" content="x = 12 + 29k"></span>, or <span class="tex" content="x \equiv 12 \pmod{29}">
+				</span>. Then there are two solutions to try <span class="tex" content="\text{mod } 58"></span>: <span class="tex" content="12"></span> and <span class="tex"
+				content="12 + 29 = 41"></span>. We check that <span class="tex" content="10^{12} \equiv 22"></span>, but <span class="tex" content="10^{41} \equiv 37 \pmod{59}">
+				</span>. Therefore, $$\log_{10}(37) \equiv 41 \pmod{58}.$$</p>
+
+				<p>This algorithm takes <span class="tex" content="O(\sqrt{p})"></span> time. In fact, it can be shown that a match should be found, on average, within <span class="tex"
+				content="\sqrt{\pi (p-1)/2}"></span> iterations, assuming the sequence is "random" (which may or may not be the case, and which we won't further study here). The
+				Birthday Paradox tells us that we should expect a probability over 50% of a match (although not necessarily a match with indices <span class="tex"
+				content="(i, 2i)"></span>) within 10 iterations in this example (which was achieved), again assuming randomness of the sequence.</p>
+
+				<hr>
+
+				<h5>The Index Calculus</h5>
+
+				<p>The most effective algorithm against discrete logarithms is called the <span class="font-weight-bold">Index Calculus</span>. The first step is
+				a pre-computation step. We choose an upper bound <span class="tex" content="B"></span> and form a <span class="font-italic">factor base</span>
+				<span class="tex" content="\mathcal{B}"></span> consisting of all primes less than <span class="tex" content="B"></span>. We compute
+				<span class="tex" content="g^j \bmod{p}"></span> for several values of <span class="tex" content="j"></span> and try to write it as a product of primes in
+				<span class="tex" content="\mathcal{B}"></span>. We may not always be able to do this, in which case we try more values of <span class="tex" content="j"></span>,
+				or a larger value for <span class="tex" content="B"></span>.</p>
+
+				<p>Each congruence we obtain will look like <span class="tex" content="g^j \equiv \prod {p_i}^{a_i} \pmod{p}"></span>, which means <span class="tex"
+				content="j \equiv \sum a_i\log_{g}(p_i) \pmod{p-1}"></span>. With enough such relations, we can solve for <span class="tex" content="\log_{g}(p_i)"></span> for each
+				<span class="tex" content="p_i"></span>. Next, for several values of <span class="tex" content="k"></span>, we compute <span class="tex" content="yg^k"></span>
+				and also try to write it as a product of primes in <span class="tex" content="\mathcal{B}: yg^k \equiv \prod {p_i}^{b_i} \pmod{p}"></span>. This means
+				<span class="tex" content="\log_{g}(y) + k \equiv \sum b_i\log_{g}(p_i) \pmod{p-1}"></span>, so we can easily
+				solve for <span class="tex" content="log_g(y)"></span> given knowledge of <span class="tex" content="\log_{g}(p_i)"></span> for each <span class="tex" content="i">
+				</span>.</p>
+
+				<p>Here's an example of the Index Calculus in action. Let's try to solve <span class="tex" content="5^x \equiv 23 \pmod{47}"></span>. Note that
+				5 is a primitive root mod 47. Let <span class="tex" content="B = 10"></span>, so that <span class="tex" content="\mathcal{B} = \{2, 3, 5, 7\}"></span>.
+				First the pre-computation:</p>
+
+				<p>
+					<div class="tex" content="\:\,5^4 \equiv 14 \equiv 2\cdot7 \:\:\pmod{47}"></div>
+					<div class="tex" content="\:\,5^8 \equiv 8 \;\:\equiv 2^3 \;\;\;\:\,\pmod{47}"></div>
+					<div class="tex" content="5^{10} \equiv 12 \equiv 2^2\cdot3 \pmod{47}"></div>
+				</p>
+
+				<p>Recall that logs live mod <span class="tex" content="p-1"></span>, not <span class="tex" content="p"></span>. The second equation implies that <span class="tex"
+				content="8 \equiv 3\log_5(2) \pmod{46}"></span>, which means that <span class="tex" content="\log_5(2) \equiv \frac{8}{3} \equiv 8 \cdot 31 \equiv 18 \pmod{46}"></span>.
+				The third equation then implies that <span class="tex" content="10 \equiv 2\log_5(2) + \log_5(3) \equiv 2\cdot18 + \log_5(3) \pmod{46}"></span>, or
+				<span class="tex" content="\log_5(3) \equiv 10 - 2\cdot18 \equiv 20 \pmod{46}"></span>. Clearly <span class="tex" content="\log_5(5) \equiv 1 \pmod{46}"></span>.
+				The first equation gives <span class="tex" content="4 \equiv \log_5(2) + \log_5(7) \pmod{46}"></span>, or <span class="tex"
+				content="\log_5(7) \equiv 4 - \log_5(2) \equiv 4 - 18 \equiv 32 \pmod{46}"></span>. Therefore, our pre-computation yields:</p>
+
+				<p>
+					<div class="tex" content="\log_5(2) \equiv 18  \pmod{46}"></div>
+					<div class="tex" content="\log_5(3) \equiv 20 \pmod{46}"></div>
+					<div class="tex" content="\log_5(5) \equiv 1 \;\:\pmod{46}"></div>
+					<div class="tex" content="\log_5(7) \equiv 32 \pmod{46}"></div>
+				</p>
+
+				<p>Now for the actual computation, let's find <span class="tex" content="\log_5(23) \bmod{46}"></span>. Compute <span class="tex"
+				content="23 \cdot 5^1 \equiv 21 \equiv 3 \cdot 7 \pmod{47}"></span>. Therefore, $$\log_5(23) \equiv \log_5(3) + \log_5(7) - \log_5(5)
+				\equiv 20 + 32 - 1 \equiv 5 \pmod{46}.$$</p>
+
+				<p>Note that the pre-computation step can be reused for other finding other logarithms with the same base. There is certainly a tradeoff with how to choose
+				<span class="tex" content="B"></span>. For larger values of <span class="tex" content="B"></span>, the pre-computation step takes longer, but the main computation
+				becomes easier (since it may be hard to write <span class="tex" content="yg^j"></span> as products of primes in a smaller factor base).</p>
+
+
+		</div>
+
+		<script src="../../katexBinding.js"></script>
+		<script src="../../js/jquery.min.js"></script>
+		<script src="../../js/bootstrap.bundle.min.js"></script>
+
+
+  </body>
+
+</html>

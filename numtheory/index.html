@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+    	<title>Number Theory</title>
+
+    	<link href="../../css/bootstrap.min.css" rel="stylesheet">
+    	<link href="../../css/ab.css" rel="stylesheet">
+    	<script src="../utils.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.2/d3.min.js"></script>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+
+		<style type="text/css">
+			.mySection {
+				padding-bottom: 40px;
+			}
+		</style>
+	</head>
+
+  <body>
+
+		<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="http://www.aaronblumenfeld.com">Aaron Blumenfeld</a>
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarResponsive">
+					<ul class="navbar-nav ml-2">
+						<li class="nav-item">
+							<a class="nav-link" href="http://www.aaronblumenfeld.com">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../sunny">Sunny</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../kmeans">k-Means</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../graph-vis">Graph Vis</a>
+						</li>
+						<li class="dropdown">
+							<a class="nav-link dropdown-toggle" href=".." id="navbarDropdown" aria-haspopup="true" aria-expanded="false">
+								Crypto
+							</a>
+							<div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
+								<a class="dropdown-item" href="../numtheory">Number Theory</a>
+								<a class="dropdown-item" href="../rsa">RSA</a>
+								<a class="dropdown-item" href="../dl">Discrete Logs</a>
+								<a class="dropdown-item" href="../ecc">Elliptic Curve Cryptography</a>
+							</div>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../teaching">Teaching</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="../../contact">Contact</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container mt-3">
+
+				<h4>Number Theory</h4>
+
+				<hr>
+
+				<p>Below is a calculator for various useful number-theoretic computational tasks. For <span class="tex" content="R(z)"></span>, you'll need to select from a dropdown
+				since <span class="tex" content="R(z)"></span> is supposed to be an irreducible polynomial (mod 2). Algorithmically checking if a polynomial is irreducible is far from
+				trivial, so a list of low-degree irreducible polynomials has been provided for you. Polynomials you enter for <span class="tex" content="P(z)"></span> and
+				<span class="tex" content="Q(z)"></span> will automatically get reduced mod <span class="tex" content="R(z)"></span>.</p>
+
+				<p>If you pick a bad value for <span class="tex" content="n"></span>, the page may time out while trying to factor <span class="tex" content="n"></span> or
+				compute <span class="tex" content="\phi(n)"></span>. It's hard to give an estimate on how large <span class="tex" content="n"></span> can be.
+				<a href="../../teaching/345rec0929.pdf">Pollard's Rho Algorithm</a> is used, which is better at finding small factors. The difficulty of factoring
+				<span class="tex" content="n"></span> doesn't scale linearly &mdash; it also depends on the size of each of <span class="tex" content="n"></span>'s factors.</p>
+
+				<div ng-app="app" ng-controller="ctrl">
+				<script src="numtheory_angular_app.js"></script>
+				<script src="../polyList.js"></script>
+				<script src="numtheory.js"></script>
+
+				<div class="row mt-2">
+					<div class="col col-lg-4 col-md-4">
+						<table class="table table-borderless table-hover mt-2">
+							<tbody>
+								<tr>
+									<th scope="row" style="min-width : 85px;">Prime <span class="tex" content="p"></span></th>
+									<td><input type="text" class="form-control" ng-model="p" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="n"></span></th>
+									<td><input type="text" class="form-control" ng-model="n" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="a"></span></th>
+									<td><input type="text" class="form-control" ng-model="a" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="b"></span></th>
+									<td><input type="text" class="form-control" ng-model="b" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="k"></span></th>
+									<td><input type="text" class="form-control" ng-model="k" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="P(z)"></span></th>
+									<td><input type="text" class="form-control" id="P" ng-model="P" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="Q(z)"></span></th>
+									<td><input type="text" class="form-control" ng-model="Q" ng-model-options="{debounce: 2000}"/></td>
+								</tr>
+								<tr>
+									<th scope="row"><span class="tex" content="R(z)"></span></th>
+									<td>
+										<select ng-model="R" class="form-control" ng-style="{'width': '100%'}">
+											<option ng-repeat="poly in polys">{{poly}}</option>
+										</select>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-lg-5 col-md-5">
+						<div class="card h-100">
+							<h4 class="card-header text-center">Output</h4>
+								<div class="card-body" id="numTheoryOutput"></div>
+								<div class="card-footer text-center">
+									<div id="numTheoryAlert" class="mt-2"></div>
+								</div>
+						</div>
+					</div>
+
+					<div class="col-lg-3 col-md-3">
+						<div class="text-center">
+							<button class="btn btn-success" ng-click="gcd()">gcd<span class="tex" content="(a, b)"></span></button>
+							<button class="btn btn-success" ng-click="generatePrime()">Random <span class="tex" content="p"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-success" ng-click="modExp()"><span class="tex" content="a^b \pmod{n}"></span></button>
+							<button class="btn btn-success" ng-click="inverse()"><span class="tex" content="\dfrac{1}{a} \pmod{n}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-success" ng-click="factor()">Factor <span class="tex" content="n"></span></button>
+							<button class="btn btn-success" ng-click="phi()"><span class="tex" content="\phi(n)"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-info" ng-click="polyAdd()"><span class="tex" content="P(z) + Q(z) \pmod{R(z)}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-info" ng-click="polyMult()"><span class="tex" content="P(z) \times Q(z) \pmod{R(z)}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-info" ng-click="polyExp()"><span class="tex" content="P(z)^k \pmod{R(z)}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-info" ng-click="polyInverse()"><span class="tex" content="\dfrac{1}{P(z)} \pmod{R(z)}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-primary" ng-click="sqrt()"><span class="tex" content="\sqrt{a} \pmod{p}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-primary" ng-click="polySqrt()"><span class="tex" content="\sqrt{P(z)} \pmod{R(z)}"></span></button>
+						</div>
+						<div class="mt-2 text-center">
+							<button class="btn btn-danger" ng-click="clearOutput()">Clear</button>
+						</div>
+					</div>
+
+
+				</div>
+
+				<hr>
+
+				<h4 class="mb-4">Number Theory Overview</h4>
+
+				<p><span class="tex" content="a \equiv b \pmod{n}"></span> simply means that <span class="tex" content="a - b"></span> is divisible by <span class="tex" content="n"></span>,
+				or <span class="tex" content="a"></span> is <span class="tex" content="b"></span> more than a multiple of <span class="tex" content="n"></span> (that is,
+				<span class="tex" content="a = b + nk"></span> for some integer <span class="tex" content="k"></span>). For examples and rules of modular arithmetic, see
+				<a href="https://artofproblemsolving.com/wiki/index.php/Modular_arithmetic/Introduction" target="_blank">here</a>.</p>
+
+				<hr>
+
+				<h5>Greatest Common Divisor</h5>
+
+				<p>The greatest common divisor (gcd) of two numbers can be computed in logarithmic time. The idea (assume that <span class="tex" content="a \leq b"></span>,
+				otherwise swap them) is that we can always write <span class="tex" content="a = qb + r"></span>, where <span class="tex" content="0 \leq r < b"></span>. Then
+				any divisor of <span class="tex" content="a"></span> and <span class="tex" content="b"></span> must also divide <span class="tex" content="r"></span>
+				(since <span class="tex" content="r = a - qb"></span>). Conversely, any divisor of <span class="tex" content="b"></span> and <span class="tex" content="r"></span>
+				must divide <span class="tex" content="a"></span> (since <span class="tex" content="a = qb + r"></span>). Therefore,
+				<span class="tex" content="\text{gcd}(a, b) = "></span> <span class="tex" content="\text{gcd}(b, r)"></span>.</p>
+
+				<p>Let's consider an example: we will compute gcd(87, 14).</p>
+
+				<p>
+					<div class="tex" content="87 = 6 \times 14 + 3"></div>
+					<div class="tex" content="14 = 4 \times 3 + 2"></div>
+					<div class="tex" content="\;\;3 = 1 \times 2 + \fbox{1}"></div>
+					<div class="tex" content="\;\;1 = 1\times 0 + 0."></div>
+				</p>
+
+				<p>Once you see a 0 in one of the rows, you go to the remainder one line up to find the gcd. Thus, gcd(87, 14) = 1. This procedure is called
+				the Euclidean Algorithm. The code is very simple:</p>
+
+				<pre class="font-weight-bold mt-2 col-lg-6 col-md-6">function gcd(int a, int b):<br>   if b = 0: return a<br>   return gcd(b, a mod b)</pre>
+
+				<hr>
+
+				<h5>Modular Inverses</h5>
+
+				<p>What does it mean to divide mod <span class="tex" content="n"></span>? It means there is a number <span class="tex" content="a^{-1}"></span>
+				such that <span class="tex" content="aa^{-1} \equiv 1 \pmod{n}"></span>. <span class="tex" content="a"></span> has an inverse mod <span class="tex" content="n"></span>
+				if and only if gcd(a, n) = 1. For example, 2 has no inverse mod 8. To see this, just multiply the numbers 0 through 7 by 2 mod 8. You get
+				<span class="tex" content="0, 2, 4, 6, 0, 2, 4, 6"></span>. The number 1 does not occur in this list.</p>
+
+				<p>If gcd(a, n) = 1, how do we compute <span class="tex" content="a^{-1} \pmod{n}"></span>? Easy, just go backwards through the Euclidean algorithm. Let's
+				rework the example above that showed gcd(87, 14) = 1 to compute <span class="tex" content="14^{-1} \bmod{87}"></span> and <span class="tex" content="87^{-1} \bmod{14}"></span>
+				(of course, since <span class="tex" content="87 \equiv 3 \pmod{14}"></span>, this is the same as <span class="tex" content="3^{-1} \bmod{14}"></span>).</p>
+
+				<p>
+					<div class="tex" content="1 = 3 - 1 \times 2"></div>
+					<div class="tex" content="\;\;\:= 3 - 1(14 - 4 \times 3)"></div>
+					<div class="tex" content="\;\;\:= 3 - 14 + 4 \times 3"></div>
+					<div class="tex" content="\;\;\:= 5\times3 - 14"></div>
+					<div class="tex" content="\;\;\:= 5(87 - 6 \times 14) - 14"></div>
+					<div class="tex" content="\;\;\:= 5 \times 87 - 31 \times 14"></div>
+				</p>
+
+				<p>This tells us how to write the gcd as a linear combination of the two inputs, which can always be done. That is, $$5 \times 87 - 31 \times 14 = 1.$$
+				Reducing mod 87 gives <span class="tex" content="-31 \times 14 \equiv 1 \pmod{87}"></span>. Reduce <span class="tex" content="-31"></span> to lie in the range
+				<span class="tex" content="[0, 86]"></span> and see that <span class="tex" content="56 \times 14 \equiv 1 \pmod{87}"></span>. Thus
+				<span class="tex" content="14^{-1} = 1 \bmod{87}"></span>. Similarly, we can reduce the equation mod 14 to see <span class="tex" content="5 \times 87 \equiv 1 \pmod{14}"></span>.
+				Thus <span class="tex" content="87^{-1} \equiv 3^{-1} = 5 \bmod{14}"></span>.</p>
+
+				<p>Rewriting the equations from the gcd steps is known as the Extended Euclidean Algorithm. This can be described very simply using recursion:</p>
+
+				<pre class="font-weight-bold mt-2 col-lg-6 col-md-6">function extendedEuclid(int a, int b):<br>   if b = 0: return (a, 1, 0)<br>   (d, s, t) = extendedEuclid(b, a mod b)<br>   return(d, t, s - floor(a/b) * t)</pre>
+
+				<hr>
+
+				<h5>Modular Exponentiation</h5>
+
+				<p>How do we compute <span class="tex" content="3^{187} \bmod{61}"></span>? One way is to compute <span class="tex" content="3^{187}"></span>, then reduce mod
+				<span class="tex" content="61"></span>. But this is terrible. This number won't fit in a 64-bit long. Even if you use arbitrary-precision integers, you'll be
+				wasting <span class="font-italic">a lot</span> of space. You'll need close to 300 bits of space to store <span class="tex" content="3^{187}"></span>
+				just to reduce it to a number that only requires 7 bits of space! Another way is to compute <span class="tex" content="3 \bmod{61}, 3^2 = 3 \times 3 \bmod{61},
+				3^3 = 3 \times 3^2 \bmod{61}, 3^4 = 3 \times 3^3 \bmod{61}"></span>, etc. But this is really slow.</p>
+
+				<p>A better way is to use <span class="font-italic">modular exponentiation</span> (sometimes called repeated squaring). This works by writing 61 in binary:
+				$$187 = 128 + 32 + 16 + 8 + 2 + 1.$$ Thus $$3^{187} = 3^{128}3^{32}3^{16}3^{8}3^{2}3^{1}.$$ So we just need to compute each element in this expression. We
+				do this by repeated squaring: for example, <span class="tex" content="3^{16} = {(3^{8})}^2"></span>.</p>
+
+				<p>
+					<div class="tex" content="\;\;\:3^1 = 3 \bmod{61}"></div>
+					<div class="tex" content="\;\;\:3^2 = 9 \bmod{61}"></div>
+					<div class="tex" content="\;\;\:3^4 = 9^2 = 20 \bmod{61}"></div>
+					<div class="tex" content="\;\;\:3^8 = 20^2 = 34 \bmod{61}"></div>
+					<div class="tex" content="\:\,3^{16} = 34^2 = 58 \bmod{61}"></div>
+					<div class="tex" content="\:\,3^{32} = 58^2 \equiv (-3)^2 = 9 \bmod{61}"></div>
+					<div class="tex" content="\:\,3^{64} \equiv 9^2 = 20 \bmod{61}"></div>
+					<div class="tex" content="3^{128} \equiv 20^2 = 34 \bmod{61}"></div>
+				</p>
+
+				<p>Then <span class="tex" content="3^{187} \equiv 34 \cdot 9 \cdot 58 \cdot 34 \cdot 9 \cdot 3 \equiv 52 \pmod{61}"></span>. In this final multiplication, you
+				should also reduce mod 61 after each multiplication so that you're multiplying smaller numbers.</p>
+
+				<p>Notice above that we used the trick <span class="tex" content="58^2 \equiv (-3)^2 \pmod{61}"></span>. This is because <span class="tex"
+				content="58 \equiv -3 \pmod{61}"></span>. This is a useful trick when doing these calculations with pen and paper (which you should definitely do some of to get
+				the hang of things).</p>
+
+				<hr>
+
+				<h5 id="fermat">Theorems of Fermat and Euler</h5>
+
+				<p>Notice in the example above under <span class="font-weight-bold">Modular Exponentiation</span> that <span class="tex" content="3^{4} \equiv 3^{64} \equiv 20
+				\pmod{61}"></span>. In general, multiplication tables will repeat like this. In this particular case, this implies (since 3 is invertible mod 61 since gcd(3, 61) = 1)
+				that <span class="tex" content="3^{60} \equiv 1 \pmod{61}"></span>. This situation occurs frequently: 61 is a prime, and <span class="tex" content="3^{61 - 1} \equiv
+				1 \pmod{61}"></span>. In fact, this always happens: it is known as <span class="font-weight-bold">Fermat's Little Theorem</span>.</p>
+
+				<p>Specifically, Fermat's Little Theorem states that if <span class="tex" content="p"></span> is prime, and <span class="tex" content="a \not \equiv 0 \pmod{p}"></span>,
+				then <span class="tex" content="a^{p-1} \equiv 1 \pmod{p}"></span>. An obvious consequence of this is that <span class="tex" content="a^{p} \equiv a \pmod{p}"></span>
+				by multiplying both sides by <span class="tex" content="a"></span> (which also holds when <span class="tex" content="a \equiv 0 \pmod{p}"></span>).</p>
+
+				<div id="accordion1" class="mb-3">
+					<div class="card">
+						<div class="card-header">
+							<h5 class="mb-0">
+								<button class="btn btn-link" data-toggle="collapse" data-target="#fermat-details" aria-expanded="true" aria-controls="fermat-details">
+									Proof.
+								</button>
+							</h5>
+						</div>
+
+						<div id="fermat-details" class="collapse" data-parent="#accordion1">
+							<div class="card-body">
+								<p>The map <span class="tex" content="f(x) = ax \bmod{p}"></span> is a bijection (which means one-to-one for our purposes), since the domain
+								<span class="tex" content="S = \{1, \ldots, p-1\}"></span> is a finite set. This holds since <span class="tex" content="ax \equiv ay \pmod{p}"></span>
+								implies <span class="tex" content="x \equiv y \pmod{p}"></span> since <span class="tex" content="a \not \equiv 0 \pmod{p}"></span> implies
+								<span class="tex" content="\text{gcd}(a, p) = 1"></span>. Thus, multiplying the set <span class="tex" content="S"></span> by <span class="tex" content="a"></span>
+								simply permutes the set <span class="tex" content="S"></span>. (In other words, if we multiply each element of <span class="tex" content="S"></span> by
+								<span class="tex" content="a"></span>, and throw the result into a new set, we get the same exact set <span class="tex" content="S"></span> &mdash; a
+								permutation, but since sets don't care about order, it is the same set.)</p>
+
+								<p>Doing this multiplication gives us an extra <span class="tex" content="p-1"></span> factors of <span class="tex" content="a"></span>. In other words,
+								<span class="tex" content="(p-1)! \equiv a^{p-1}(p-1)! \pmod{p}"></span>. Since <span class="tex" content="\text{gcd}((p-1)!, p) = 1"></span>, we can divide
+								by <span class="tex" content="(p-1)!"></span>, which means that <span class="tex" content="a^{p-1} \equiv 1 \pmod{p}"></span>.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<p>What this lets us do is simplify our calculations. For example, when computing <span class="tex" content="3^{187} \bmod{61}"></span>, since 61 is prime, we can write this as
+				<span class="tex" content="3^{3(60) + 7} = {(3^{60})}^3\cdot 3^7 \equiv 1^3 \cdot 3^7 \equiv 3^7 \pmod{61}"></span>. We can then use repeated squaring to compute
+				<span class="tex" content="3^7 \equiv 52 \pmod{61}"></span>.</p>
+
+				<p id="euler">Another cute trick is this tells us <span class="tex" content="a^{-1} \equiv a^{p-2} \pmod{p}"></span>, so we can use modular exponentiation to find an
+				inverse (when the modulus is prime). Sometimes this is faster than the Extended Euclidean Algorithm; sometimes it is slower.</p>
+
+				<p>A similar result gives us <span class="font-weight-bold">Euler's Theorem</span>, which says that if <span class="tex" content="\text{gcd}(a, n) = 1"></span>, then
+				<span class="tex" content="a^{\phi(n)} \equiv 1 \pmod{n}"></span>. Here, $$\phi(n) = \left|\{k : 1 \leq k \leq n, \text{ gcd}(k, n) = 1\}\right|.$$ This is the
+				number of integers <span class="tex" content="k"></span> between <span class="tex" content="1"></span> and <span class="tex" content="n"></span> such that
+				<span class="tex" content="\text{gcd}(k, n) = 1"></span>. Some useful facts for computing <span class="tex" content="\phi(n)"></span> are the following:</p>
+
+				<p>
+					<div>
+						<span class="tex mr-5" content="\;\;\;\,\phi(p) = p-1"></span> for <span class="tex" content="p"></span> prime,
+					</div>
+					<div>
+						<span class="tex mr-3" content="\;\;\phi(p^r) = p^r - p^{r-1}"></span> for <span class="tex" content="p"></span> prime, <span class="tex" content="r \geq 1"></span>,
+					</div>
+					<div>
+						<span class="tex mr-2" content="\phi(mn) = \phi(m)\phi(n)"></span> if <span class="tex" content="\text{gcd}(m, n) = 1"></span>.
+					</div>
+				</p>
+
+				<p>In general, computing <span class="tex" content="\phi(n)"></span> is hard. Certainly, factoring <span class="tex" content="n"></span> is one way to do so, but
+				factoring is also difficult. For example, in RSA (where <span class="tex" content="n = pq"></span>), <span class="tex" content="\phi(n) = (p-1)(q-1)"></span>, but
+				it turns out (in this simpler case) that factoring <span class="tex" content="n"></span> is equivalent to computing <span class="tex" content="\phi(n)"></span>.
+				See the page on <a href="../rsa/index.html#accordion1">RSA</a> for the details of this equivalence.</p>
+
+				<p>The proof of Euler's Theorem is similar to that of Fermat. Here's a simple example of Euler's Theorem in action. Let's find the last digit of <span class="tex"
+				content="7^{150923}"></span>. Clearly computing this number will take an unsatisfactory amount of space (and time). An easier way to do this is to note that
+				<span class="tex" content="10 = 2 \times 5"></span>, so <span class="tex" content="\phi(10) = \phi(2)\phi(5)"></span> (since <span class="tex" content="\text{gcd}(2, 5) = 1"></span>)
+				<span class="tex" content="= 1 \cdot 4 = 4"></span>. Since <span class="tex" content="\text{gcd}(7, 10) = 1"></span>, Euler's Theorem holds, which means
+				<span class="tex" content="7^4 \equiv 1 \pmod{10}"></span>. Note that finding the last digit of a number is the same thing as reducing that number mod
+				<span class="tex" content="10"></span>.</p>
+
+				<p id="binary">So write <span class="tex" content="150923 = 4(\text{something}) + 3"></span>, which means <span class="tex"
+				content="7^{150923} \equiv {(7^4)}^{\text{something}}7^3 \equiv 1^{\text{something}}7^3 \equiv 7^3 \equiv 3 \pmod{10}"></span>. The important point with Euler
+				(or Fermat) is that when we work mod <span class="tex" content="n"></span> (or <span class="tex" content="p"></span>), we get to reduce the exponents mod
+				<span class="tex" content="\phi(n)"></span> (or <span class="tex" content="p-1"></span>) and greatly simplify our lives.</p>
+
+				<hr>
+
+				<h5>Binary Fields</h5>
+
+				<p>Roughly speaking, a field is a set where we can add, subtract, multiply, and divide. Examples of fields are the real numbers and the integers mod a prime
+				<span class="tex" content="p"></span>. But the integers mod <span class="tex" content="n"></span> when <span class="tex" content="n"></span> is not prime do not form
+				a field. This is because we can't divide by a number a when <span class="tex" content="\text{gcd}(a, n) > 1"></span>. Any field with a finite number
+				of elements turns out to have cardinality a power of some prime <span class="tex" content="p"></span>.</p>
+
+				<p>The integers mod <span class="tex" content="p"></span> are a common example seen throughout cryptography called <span class="font-weight-bold">prime fields</span>.
+				Another example of fields is called <span class="font-weight-bold">binary fields</span>. These are fields with <span class="tex" content="2^r"></span> elements for
+				some <span class="tex" content="r \geq 0"></span>. To form such a field, we first find an irreducible polynomial mod 2, call it <span class="tex" content="R(z)"></span>
+				(this means it cannot be factored). We then take the set of every polynomial with coefficients mod 2 with degree strictly less
+				than <span class="tex" content="r"></span> and stick it in the set. There are precisely <span class="tex" content="2^r"></span> such polynomials. This is our field.</p>
+
+				<p>We can do this with coefficients mod any prime <span class="tex" content="p"></span> and get a field with <span class="tex" content="p^r"></span> elements, but we
+				will not discuss this for <span class="tex" content="p > 2"></span> here.</p>
+
+				<p>For example, let's take <span class="tex" content="R(z) = z^3 + z + 1"></span>. This is irreducible mod 2. In general, checking if a polynomial is irreducible is
+				challenging, but any cubic polynomial is either irreducible or reduces as a product of three linear factors or a linear factor and a quadratic factor, which can be
+				ruled out by making sure there are no roots. Since we are working mod 2, simply plug in 0 and 1: and see that <span class="tex" content="R(0) \equiv R(1) \equiv 1 \pmod{2}"></span>,
+				<span class="tex" content="R(z)"></span> is indeed irreducible mod 2.</p>
+
+				<p>Thus our field is the set <span class="tex" content="\{0, 1, z, z+1, z^2, z^2 + 1, z^2 + z, z^2 + z + 1\}"></span>. Addition is straightforward: simply add the
+				corresponding powers mod 2. For example, <span class="tex" content="(z + 1) + (z^2 + 1) = z^2 + z + (1 + 1) = z^2 + z + 0 = z^2 + z"></span>. Since <span class="tex"
+				content="1 \equiv -1 \pmod{2}"></span>, subtraction is the same as addition.</p>
+
+				<p>Multiplication is slightly more complicated (this is the part where we see why we needed an irreducible polynomial in the first place). How do we multiply
+				<span class="tex" content="(z+1)(z^2+1)"></span>? First multiply it the way we would multiply two polynomials in high school algebra: <span class="tex"
+				content="(z+1)(z^2+1) = z^3 + z^2 + z + 1"></span>. But this degree is too high! The degree needs to be at most 2. Notice we can write <span class="tex"
+				content="z^3 + z^2 + z + 1 = 1(z^3 + z + 1) + z^2"></span>. Thus,
+
+				$$z^3 + z^2 + z + 1 \equiv z^2 \pmod{z^3 + z + 1}.$$</p>
+
+				<p>This is <span class="font-italic">exactly</span> the same situation as the Euclidean algorithm! For any two polynomials <span class="tex" content="f(z)"></span> and
+				<span class="tex" content="R(z)"></span>, we can write <span class="tex" content="f(z) = q(z)R(z) + r(z)"></span> for some polynomials <span class="tex"
+				content="q(z)"></span> and <span class="tex" content="r(z)"></span>, where the degree of <span class="tex" content="r(z)"></span> is strictly less than the degree of
+				<span class="tex" content="R(z)"></span>. Thus, in our 8-element field, we have <span class="tex" content="(z+1)(z^2 + 1) = z^2"></span>.</p>
+
+				<p>In general, finding <span class="tex" content="q(z)"></span> and <span class="tex" content="r(z)"></span> can be done using polynomial long division. Another way
+				(which is really another way of thinking about polynomial long division) is to keep subtracting off appropriate powers of <span class="tex" content="z"></span>
+				multiplied by the modulus polynomial <span class="tex" content="R(z)"></span>. For example, let's find out what polynomial <span class="tex" content="z^7"></span> is
+				congruent to. We can think of <span class="tex" content="z^3 + z + 1 \equiv 0 \pmod{z^3 + z + 1}"></span>. This means that $$z^7 + z^4(z^3 + z + 1) \equiv z^7 + z^7
+				+ z^6 + z^4 \equiv z^6 + z^4 \pmod{z^3 + z + 1}.$$</p>
+
+				<p>We have now reduced this from degree 7 to degree 6, so we can keep on going! $$z^6 + z^4 \equiv z^6 + z^4 + z^3(z^3 + z + 1) \equiv (z^6 + z^6) + (z^4 + z^4) + 1
+				\equiv 1 \pmod{z^3 + z + 1}.$$ This means that <span class="tex" content="z^7 = 1"></span> in this field. Note that the choice of irreducible polynomial actually
+				matters here. If we had chosen <span class="tex" content="R(z) = z^3 + z^2 + 1"></span>, for example (which is also irreducible mod 2), we would get two different
+				fields (but the fields are what is known as isomorphic).</p>
+
+				<p>So how do we do division? The standard trick is to use the Extended Euclidean algorithm! Use long division each step of for <span class="tex"
+				content="\text{gcd}(f(z), R(z))"></span>, then rewrite the calculations to find polynomials <span class="tex" content="s(z)"></span> and <span class="tex"
+				content="t(z)"></span> such that <span class="tex" content="s(z)f(z) + t(z)R(z) = 1"></span>. Then reduce mod <span class="tex" content="R(z)"></span> to get
+				<span class="tex" content="s(z)f(z) \equiv 1 \pmod{R(z)}"></span>, or <span class="tex" content="{f(z)}^{-1} = s(z)"></span>.</p>
+
+				<p>But an easier way (at least to code up, perhaps not to do by hand) is observe for any nonzero polynomial <span class="tex" content="f(z)"></span>, that <span
+				class="tex" content="{(f(z))}^{2^r-1} = 1"></span>. This is very similar to Fermat's Little Theorem. We can then combine our multiplication algorithm with repeated
+				squaring (i.e., modular exponentiation) since this immediately implies that <span class="tex" content="{(f(z))}^{-1} = {(f(z))}^{2^r - 2}"></span>. For example, to
+				find <span class="tex" content="z^{-1}"></span> in our field, we can simply take <span class="tex" content="z^6"></span> and reduce it to have degree at most 2. It
+				turns out <span class="tex" content="\frac{1}{z} = z^6 = z^2 + 1"></span> (you should do the calculations yourself to verify this).</p>
+
+				<hr>
+
+				<h5>Square Roots in Finite Fields</h5>
+
+				<p>How can we take square roots mod <span class="tex" content="p"></span>? <span class="font-italic">When</span> can we take square roots mod <span class="tex"
+				content="p"></span>? What about mod <span class="tex" content="n"></span>? It turns out precisely half of the nonzero numbers have square roots mod <span class="tex"
+				content="p"></span>, and the other half don't. For example, 2 is not a square mod 5. All the squares mod 5 are <span class="tex"
+				content="0^2, 1^2, 2^2, 3^2, 4^2 \equiv 0, 1 \pmod{5}"></span>. The Legendre symbol <span class="tex" content="\left(\frac{a}{p}\right)"></span> (read "a on p") is
+				very useful in determining if a number has a square root mod <span class="tex" content="p"></span> or not.</p>
+
+				<p>The Legendre symbol is defined as $$\left(\frac{a}{p}\right) = \begin{cases}0, &a = 0, \\ 1, &a \text{ is a square,} \\ -1, &a \text{ is not a square.}\end{cases}$$</p>
+
+				<p id="squares">It turns out this can be computed very effectively as <span class="tex" content="\left(\frac{a}{p}\right) = a^{(p-1)/2} \bmod{p}"></span>. There are
+				also more efficient ways to compute <span class="tex" content="\left(\frac{a}{p}\right)"></span> (using quadratic reciprocity and Jacobi symbols), but we will not need
+				that here. See <a href="https://crypto.stanford.edu/pbc/notes/numbertheory/quadrecip.html" target="_blank">Quadratic Reciprocity</a> for the details.
+
+				<p>One useful fact (for <a href="../ecc">elliptic curve cryptography</a>) is that any integer <span class="tex" content="a"></span> mod <span class="tex"
+				content="p"></span> has precisely <span class="tex" content="1 + \left(\frac{a}{p}\right)"></span> square roots. Why is this true? If <span class="tex"
+				content="a = 0"></span>, there is one square root (namely <span class="tex" content="0"></span>), and <span class="tex" content="\left(\frac{a}{p}\right) = 0"></span>.
+				If <span class="tex" content="\left(\frac{a}{p}\right) = -1"></span>, there are <span class="tex" content="0 = -1 + 1"></span> square roots. If <span class="tex"
+				content="\left(\frac{a}{p}\right) = 1"></span>, there are <span class="tex" content="2 = 1 + 1"></span> square roots (if <span class="tex"
+				content="x^2 \equiv a \pmod{p}"></span>, then <span class="tex" content="(-x)^2 \equiv a \pmod{p}"></span>, and there can be no more than two roots to a quadratic
+				polynomial over a field).</p>
+
+				<p>But how do we actually <span class="font-italic">compute</span> a square root if it does exist? (Once we have one, the other is easy to find: simply
+				negate it.) There is a fairly complicated algorithm called <a href="http://www.math.vt.edu/people/brown/class_homepages/shanks_tonelli.pdf"
+				target="_blank">Shanks' Algorithm</a>, which we won't cover. But it is easy in the case when <span class="tex" content="p \equiv 3 \pmod{4}"></span>. Simply set
+				<span class="tex" content="x = a^{(p+1)/4} \bmod{p}"></span>. Then $$x^2 \equiv a^{(p+1)/2} \equiv a^{(p-1)/2 + 1} \equiv a\left(\frac{a}{p}\right) = a \pmod{p}.$$</p>
+
+				<p>What about square roots mod <span class="tex" content="n"></span>? This is difficult in general, and the <a href="https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html" target="_blank">
+				Chinese Remainder Theorem</a> is useful here. If <span class="tex" content="n"></span> is a product of distinct primes, <span class="tex" content="a"></span> will be
+				a square mod <span class="tex" content="n"></span> if and only if a is a square mod each of the primes that make up <span class="tex" content="n"></span>'s
+				factorization. In this case, we can find a square root mod <span class="tex" content="n"></span> by finding one mod each prime and applying the Chinese Remainder
+				Theorem. If <span class="tex" content="n"></span> is a product of powers of distinct primes, we apply the same method, but need to find square roots mod a power of
+				each prime. This can be done by finding a root mod <span class="tex" content="p"></span> and "lifting" that root to a solution mod
+				<span class="tex" content="p^2, p^3"></span>, etc. This idea is formalized by Hensel's Lemma (see pages 9-10 <a href="../../teaching/files/local-global.pdf"
+				target="_blank">here</a> for details).</p>
+
+				<p>Square roots in binary fields turn out to be quite easy. For a binary field with degree <span class="tex" content="r"></span> (i.e., a field with <span class="tex"
+				content="2^r"></span> elements), any polynomial <span class="tex" content="f(z)"></span> satisfies <span class="tex" content="{(f(z))}^{2^r} = f(z)"></span>. This is
+				similar to Fermat's Little Theorem (this is Lagrange's Theorem, if you've studied abstract algebra). So simply define <span class="tex" content="g(z) =
+				{(f(z))}^{2^{r-1}}"></span>. Then $$g(z)^2 = { {((f(z))}^{2^{r-1}}) }^2 = {(f(z))}^{2 \cdot 2^{r-1}} = {(f(z))}^{2^r} = f(z).$$</p>
+
+				<p>It is not so simple for finite fields with a number of elements that is neither prime nor a power of 2. We will not cover that here.</p>
+
+		</div>
+
+		<script src="../../katexBinding.js"></script>
+		<script src="../../js/jquery.min.js"></script>
+		<script src="../../js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>
